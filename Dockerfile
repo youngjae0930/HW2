@@ -12,7 +12,7 @@ WORKDIR /app
 # [Phase 2] 시스템 의존성 설치 (이미지 폰트 처리 등을 위한 라이브러리)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libgl1-mesa-glx \
+    libgl1\
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
