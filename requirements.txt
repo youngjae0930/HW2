@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+python-multipart
+transformers
+torch
+pillow
+pydantic-settings
+pytest
+httpx
+aiofiles
+sacremoses
+einops
+timm

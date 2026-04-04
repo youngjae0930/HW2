@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>사물 탐정 | 전자기기 분석 서비스</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Object Detective</h1>
+            <p class="subtitle">전자기기를 인식하고 글로벌 전기 사양을 확인하세요.</p>
+        </header>
+
+        <section class="upload-section">
+            <div class="upload-card" id="drop-zone">
+                <input type="file" id="file-input" accept="image/*">
+                <div class="upload-icon-container">
+                    <span class="upload-icon">📸</span>
+                </div>
+                <p class="upload-text">이미지를 여기에 끌어다 놓거나 클릭하여 업로드</p>
+                <p class="upload-hint">가전제품, 게임기, 각종 케이블 등 분석 가능</p>
+            </div>
+        </section>
+        <div class="loading">
+            <div class="pulse-container">
+                <div class="pulse"></div>
+            </div>
+            <p style="margin-top: 20px; color: var(--primary); font-weight: 500;">AI가 제품을 분석 중입니다...</p>
+        </div>
+
+        <!-- 분석 뷰: 사진과 결과를 가로로 배치 -->
+        <main class="analysis-view" id="analysis-view">
+            <section id="preview-container">
+                <div class="glass-preview">
+                    <img id="image-preview" src="#" alt="미리보기">
+                </div>
+            </section>
+
+            <section id="result-container">
+                <div class="result-header">
+                    <span class="tag">분석 결과</span>
+                </div>
+                <div class="result-card">
+                    <h2 class="result-title" id="obj-name">제품명</h2>
+                    <p class="result-desc" id="obj-desc">AI 설명</p>
+                    
+                    <div class="specs-grid">
+                        <div class="spec-item">
+                            <span class="spec-label">전압 범위 (Voltage)</span>
+                            <span class="spec-value" id="spec-voltage">-</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">평균 전력 (Power)</span>
+                            <span class="spec-value" id="spec-power">-</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
