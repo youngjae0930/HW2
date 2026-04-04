@@ -24,7 +24,7 @@ RUN pip install --no-cache-dir -U pip && \
 # [Phase 4] AI 모델 프리로드 (Pre-download)
 # 빌드 단계에서 모델을 미리 받아 이미지 용량을 키우되, 기동 시간을 대폭 단축
 COPY scripts/download_models.py ./scripts/
-RUN python scripts/download_models.py
+# RUN python scripts/download_models.py
 
 # [Phase 5] 애플리케이션 코드 복사
 COPY . .
