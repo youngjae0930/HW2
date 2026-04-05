@@ -80,14 +80,16 @@ async function handleUpload(file) {
 
 // Display Result in UI
 function displayResult(result) {
-    const specs = result.electrical_info;
+    const elecSpecs = result.electrical_info;
+    const furnSpecs = result.furniture_info;
     const isElectronic = result.is_electronic;
+    const isFurniture = result.is_furniture;
     const isAiGenerated = result.is_ai_generated;
     
     // 제품명 표시
     document.getElementById('obj-name').textContent = result.object_name;
     
-    // AI 배지 노출 제어 (제품명 위에 삽입)
+    // AI 배지 노출 제어
     const aiBadge = document.getElementById('ai-badge');
     if (isAiGenerated) {
         aiBadge.textContent = '인식된 사물에 대해 AI 가 분석한 정보가 표시됩니다';
@@ -99,18 +101,25 @@ function displayResult(result) {
     // 설명 표시
     document.getElementById('obj-desc').textContent = result.description;
 
-    // UI 클린업 (비사물 사진이거나 비전자기기일 경우 사양 카드 숨김)
-    const specsGrid = document.querySelector('.specs-grid');
-    if (result.object_name === "사물 사진 필요" || !isElectronic || !specs) {
-        specsGrid.style.display = 'none';
-        if (result.object_name === "사물 사진 필요") {
-            document.getElementById('obj-name').style.color = '#f87171'; // 경고색(빨강)
-        }
-    } else {
-        specsGrid.style.display = 'grid';
-        document.getElementById('obj-name').style.color = ''; // 기본색 복원
-        document.getElementById('spec-voltage').textContent = specs.is_variable ? '제품별 상이(불분명)' : specs.voltage_range;
-        document.getElementById('spec-power').textContent = specs.typical_power || '-';
+    // 섹션 관리
+    const elecGrid = document.getElementById('elec-specs');
+    const furnGrid = document.getElementById('furn-specs');
+
+    // 초기화
+    elecGrid.style.display = 'none';
+    furnGrid.style.display = 'none';
+    document.getElementById('obj-name').style.color = '';
+
+    if (result.object_name === "사물 사진 필요") {
+        document.getElementById('obj-name').style.color = '#f87171';
+    } else if (isElectronic && elecSpecs) {
+        elecGrid.style.display = 'grid';
+        document.getElementById('spec-voltage').textContent = elecSpecs.is_variable ? '제품별 상이(불분명)' : elecSpecs.voltage_range;
+        document.getElementById('spec-power').textContent = elecSpecs.typical_power || '-';
+    } else if (isFurniture && furnSpecs) {
+        furnGrid.style.display = 'grid';
+        document.getElementById('spec-material').textContent = furnSpecs.material || '확인 중';
+        document.getElementById('spec-care').textContent = furnSpecs.care_tip || '-';
     }
 
     resultContainer.style.display = 'block';

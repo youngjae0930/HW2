@@ -18,6 +18,7 @@ def fixed_get_imports(filename: str | os.PathLike) -> list[str]:
 from transformers import AutoProcessor, AutoModelForCausalLM, pipeline
 from ..core.config import settings
 from .electronics import get_electrical_info
+from .furniture import get_furniture_info
 from ..schemas.response import DetectionResult, PredictionResponse
 
 class VisionService:
@@ -54,7 +55,7 @@ class VisionService:
             self.use_ai_translator = False
 
     async def predict(self, image: Image.Image) -> PredictionResponse:
-        """사물만 딱 추출하여 명사형 제목 제공 (비사물 필터링 포함)"""
+        """사물 분석 및 전자기기/가구 정보 제공"""
         
         # 1. 캡셔닝 수행
         prompt = "<CAPTION>"
@@ -73,44 +74,62 @@ class VisionService:
         parsed_answer = self.processor.post_process_generation(generated_text, task=prompt, image_size=(image.width, image.height))
         raw_caption = parsed_answer["<CAPTION>"]
 
-        # 2. 비사물(스크린샷, UI 등) 판별
+        # 2. 비사물 필터링
         if self._is_non_object_image(raw_caption):
             return PredictionResponse(
                 results=[DetectionResult(
                     object_name="사물 사진 필요",
-                    description="업로드한 이미지가 실제 사물이 아닌 스크린샷이나 디지털 화면으로 보입니다. 분석을 위해 인공지능이 인식할 수 있는 실제 사물의 사진을 업로드해 주세요.",
-                    electrical_info=None
+                    description="업로드한 이미지가 실제 사물이 아닌 화면이나 UI로 보입니다. 실제 사물의 사진을 업로드해 주세요.",
+                    is_ai_generated=True
                 )],
                 ai_model_info=settings.MODEL_ID
             )
 
-        # 3. 핵심 명사 추출
+        # 3. 분석 수행 (전자 vs 가구 vs 일반)
         noun_en = self._extract_core_noun(raw_caption)
         
-        # 전기 사양 정보 조회
-        elec_info, is_electronic, is_ai_generated = get_electrical_info(noun_en)
-        if not elec_info and is_electronic: # 전자기기인데 정보를 못찾았을 때 캡션으로 시도
-             elec_info, is_electronic, is_ai_generated = get_electrical_info(raw_caption)
+        # [Category 1] 전자기기 분석
+        elec_info, is_electronic, is_ai_elec = get_electrical_info(noun_en)
+        if not elec_info and is_electronic:
+             elec_info, is_electronic, is_ai_elec = get_electrical_info(raw_caption)
 
-        # 제목 결정 (명사형)
-        # DB에 한글 이름이 정식 등록되어 있으면 사용, 아니면 AI 번역 수행
+        # [Category 2] 가구 분석
+        furn_info, is_furniture = get_furniture_info(noun_en)
+        if not furn_info and is_furniture:
+            furn_info, is_furniture = get_furniture_info(raw_caption)
+
+        # 제목 결정
+        title_ko = ""
         if elec_info and self._contains_korean(elec_info.korean_name):
-            object_name_ko = elec_info.korean_name
+            title_ko = elec_info.korean_name
+        elif furn_info and self._contains_korean(furn_info.korean_name):
+            title_ko = furn_info.korean_name
         else:
-            object_name_ko = self._translate_description(noun_en)
+            title_ko = self._translate_description(noun_en)
             
-        object_name_ko = self._sanitize_title(object_name_ko)
+        title_ko = self._sanitize_title(title_ko)
 
-        # 보편적 설명 생성
-        rich_description = self._build_rich_description(noun_en, elec_info)
+        # 설명 생성
+        rich_description = ""
+        if is_electronic and elec_info:
+            rich_description = elec_info.description_template
+        elif is_furniture:
+            if furn_info:
+                rich_description = furn_info.description_template
+            else:
+                rich_description = f"인식된 가구는 '{title_ko}'입니다. 해당 가구에 대한 관리 정보를 불러오는 중입니다."
+        else:
+            rich_description = f"인식된 사물은 '{title_ko}'입니다. 해당 사물의 특징을 분석하고 있습니다."
 
         # 결과 구성
         result = DetectionResult(
-            object_name=object_name_ko,
+            object_name=title_ko,
             description=rich_description,
             is_electronic=is_electronic,
-            is_ai_generated=is_ai_generated,
-            electrical_info=elec_info
+            is_furniture=is_furniture,
+            is_ai_generated=is_ai_elec or (is_furniture and not furn_info),
+            electrical_info=elec_info,
+            furniture_info=furn_info
         )
 
         return PredictionResponse(
@@ -173,15 +192,6 @@ class VisionService:
     def _contains_korean(self, text: str) -> bool:
         """한글 포함 여부 확인"""
         return bool(re.search("[가-힣]", text))
-
-    def _build_rich_description(self, noun_en: str, elec_info: any) -> str:
-        """사물 자체에 대한 정보 제공"""
-        if elec_info:
-            return f"{elec_info.description_template}"
-        
-        translated_noun = self._translate_description(noun_en)
-        translated_noun = self._sanitize_title(translated_noun)
-        return f"인식된 사물은 '{translated_noun}'입니다. 해당 사물에 대한 구체적인 정보를 불러오고 있습니다."
 
     def _translate_description(self, text: str) -> str:
         """NLLB-200을 사용하여 고품질 번역"""

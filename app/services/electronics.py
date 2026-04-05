@@ -185,7 +185,7 @@ SYNONYMS_MAPPING = {
 }
 
 NON_ELECTRONIC_KEYWORDS = {
-    "piano", "acoustic guitar", "table", "chair", "desk", "bed", "sofa", "book", "bottle",
+    "piano", "acoustic guitar", "book", "bottle",
     "cup", "plate", "fork", "knife", "plant", "tree", "flower", "cat", "dog", "bird",
     "clothing", "shirt", "pants", "shoes", "bag", "backpack", "window", "door", "wall",
     "floor", "ceiling", "stairs", "bicycle", "car", "motorcycle", "vehicle", "human",

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>사물 탐정 | 전자기기 분석 서비스</title>
+    <title>사물 탐정 | 전자기기 및 가구 분석 서비스</title>
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -13,7 +13,7 @@
     <div class="container">
         <header>
             <h1>Object Detective</h1>
-            <p class="subtitle">전자기기를 인식하고 글로벌 전기 사양을 확인하세요.</p>
+            <p class="subtitle">전자기기 및 가구를 인식하고 전문적인 관리 팁을 확인하세요.</p>
         </header>
 
         <section class="upload-section">
@@ -23,7 +23,7 @@
                     <span class="upload-icon">📸</span>
                 </div>
                 <p class="upload-text">이미지를 여기에 끌어다 놓거나 클릭하여 업로드</p>
-                <p class="upload-hint">가전제품, 게임기, 각종 케이블 등 분석 가능</p>
+                <p class="upload-hint">가전제품, 게임기, 소파, 의자 등 분석 가능</p>
             </div>
         </section>
         <div class="loading">
@@ -50,7 +50,8 @@
                     <h2 class="result-title" id="obj-name">제품명</h2>
                     <p class="result-desc" id="obj-desc">AI 설명</p>
                     
-                    <div class="specs-grid">
+                    <!-- 전자기기 사양 -->
+                    <div class="specs-grid" id="elec-specs">
                         <div class="spec-item">
                             <span class="spec-label">전압 범위 (Voltage)</span>
                             <span class="spec-value" id="spec-voltage">-</span>
@@ -58,6 +59,18 @@
                         <div class="spec-item">
                             <span class="spec-label">평균 전력 (Power)</span>
                             <span class="spec-value" id="spec-power">-</span>
+                        </div>
+                    </div>
+
+                    <!-- 가구 사양 -->
+                    <div class="specs-grid" id="furn-specs" style="display: none;">
+                        <div class="spec-item">
+                            <span class="spec-label">주요 재질 (Material)</span>
+                            <span class="spec-value" id="spec-material">-</span>
+                        </div>
+                        <div class="spec-item">
+                            <span class="spec-label">관리 팁 (Care Tip)</span>
+                            <span class="spec-value" id="spec-care">-</span>
                         </div>
                     </div>
                 </div>

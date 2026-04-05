@@ -9,7 +9,7 @@
 
 ## 시작하기
 
-### 로컬 실행
+###  로컬 실행
 1. 가상환경 생성 및 의존성 설치
    ```bash
    pip install -r requirements.txt
