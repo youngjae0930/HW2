@@ -259,11 +259,29 @@ h1 {
     word-break: keep-all;
 }
 
-/* 추가 스타일: 스크롤 최적화 */
-.result-card::-webkit-scrollbar {
-    width: 6px;
+/* Category Themes */
+.elec-theme {
+    border-color: rgba(129, 140, 248, 0.4) !important;
+    background: linear-gradient(135deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
 }
-.result-card::-webkit-scrollbar-thumb {
-    background: var(--glass-border);
-    border-radius: 10px;
+
+.furn-theme {
+    border-color: rgba(192, 132, 252, 0.4) !important;
+    background: linear-gradient(135deg, rgba(88, 28, 135, 0.2) 0%, rgba(15, 23, 42, 0.8) 100%) !important;
+}
+
+#category-tag {
+    transition: all 0.3s ease;
+}
+
+.elec-tag {
+    background: rgba(129, 140, 248, 0.1);
+    color: #818cf8;
+    border-color: rgba(129, 140, 248, 0.2);
+}
+
+.furn-tag {
+    background: rgba(192, 132, 252, 0.1);
+    color: #c084fc;
+    border-color: rgba(192, 132, 252, 0.2);
 }

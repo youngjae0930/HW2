@@ -42,42 +42,47 @@
             </section>
 
             <section id="result-container">
-                <div class="result-header">
-                    <span class="tag">분석 결과</span>
-                </div>
-                <div class="result-card">
-                    <div id="ai-badge" class="ai-badge"></div>
-                    <h2 class="result-title" id="obj-name">제품명</h2>
-                    <p class="result-desc" id="obj-desc">AI 설명</p>
-                    
-                    <!-- 전자기기 사양 -->
-                    <div class="specs-grid" id="elec-specs">
-                        <div class="spec-item">
-                            <span class="spec-label">전압 범위 (Voltage)</span>
-                            <span class="spec-value" id="spec-voltage">-</span>
+                    <div class="result-header">
+                        <span class="tag" id="category-tag">분석 결과</span>
+                    </div>
+                    <div class="result-card" id="main-result-card">
+                        <div id="ai-badge" class="ai-badge"></div>
+                        <h2 class="result-title" id="obj-name">제품명</h2>
+                        <p class="result-desc" id="obj-desc">AI 설명</p>
+                        
+                        <!-- 전자기기 사양 -->
+                        <div class="specs-grid" id="elec-specs">
+                            <div class="spec-item">
+                                <span class="spec-label">전압 범위 (Voltage)</span>
+                                <span class="spec-value" id="spec-voltage">-</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">평균 전력 (Power)</span>
+                                <span class="spec-value" id="spec-power">-</span>
+                            </div>
                         </div>
-                        <div class="spec-item">
-                            <span class="spec-label">평균 전력 (Power)</span>
-                            <span class="spec-value" id="spec-power">-</span>
+
+                        <!-- 가구 사양 -->
+                        <div class="specs-grid" id="furn-specs" style="display: none;">
+                            <div class="spec-item">
+                                <span class="spec-label">주요 재질 (Material)</span>
+                                <span class="spec-value" id="spec-material">-</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">관리 팁 (Care Tip)</span>
+                                <span class="spec-value" id="spec-care">-</span>
+                            </div>
                         </div>
                     </div>
+                </section>
+            </main>
+            
+            <footer style="margin-top: 80px; text-align: center; color: var(--text-secondary); font-size: 0.8rem; border-top: 1px solid var(--glass-border); padding-top: 24px;">
+                <p>© 2026 Object Detective. Service Version: <strong>v2.1.0-FURNITURE</strong></p>
+                <p style="opacity: 0.6; margin-top: 4px;">AI-Powered Physical Object Recognition & Maintenance Guide</p>
+            </footer>
+        </div>
 
-                    <!-- 가구 사양 -->
-                    <div class="specs-grid" id="furn-specs" style="display: none;">
-                        <div class="spec-item">
-                            <span class="spec-label">주요 재질 (Material)</span>
-                            <span class="spec-value" id="spec-material">-</span>
-                        </div>
-                        <div class="spec-item">
-                            <span class="spec-label">관리 팁 (Care Tip)</span>
-                            <span class="spec-value" id="spec-care">-</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-    </div>
-
-    <script src="script.js"></script>
-</body>
+        <script src="script.js"></script>
+    </body>
 </html>

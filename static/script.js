@@ -102,24 +102,41 @@ function displayResult(result) {
     document.getElementById('obj-desc').textContent = result.description;
 
     // 섹션 관리
+    const resultCard = document.getElementById('main-result-card');
+    const categoryTag = document.getElementById('category-tag');
     const elecGrid = document.getElementById('elec-specs');
     const furnGrid = document.getElementById('furn-specs');
 
     // 초기화
     elecGrid.style.display = 'none';
     furnGrid.style.display = 'none';
+    resultCard.className = 'result-card'; //Reset themes
+    categoryTag.className = 'tag';
     document.getElementById('obj-name').style.color = '';
 
     if (result.object_name === "사물 사진 필요") {
         document.getElementById('obj-name').style.color = '#f87171';
+        categoryTag.textContent = '알림';
     } else if (isElectronic && elecSpecs) {
+        // 전자기기 테마 적용
+        resultCard.classList.add('elec-theme');
+        categoryTag.classList.add('elec-tag');
+        categoryTag.textContent = '카테고리: 전자기기';
+        
         elecGrid.style.display = 'grid';
         document.getElementById('spec-voltage').textContent = elecSpecs.is_variable ? '제품별 상이(불분명)' : elecSpecs.voltage_range;
         document.getElementById('spec-power').textContent = elecSpecs.typical_power || '-';
     } else if (isFurniture && furnSpecs) {
+        // 가구 테마 적용
+        resultCard.classList.add('furn-theme');
+        categoryTag.classList.add('furn-tag');
+        categoryTag.textContent = '카테고리: 가구';
+        
         furnGrid.style.display = 'grid';
         document.getElementById('spec-material').textContent = furnSpecs.material || '확인 중';
         document.getElementById('spec-care').textContent = furnSpecs.care_tip || '-';
+    } else {
+        categoryTag.textContent = '카테고리: 일반 사물';
     }
 
     resultContainer.style.display = 'block';
