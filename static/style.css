@@ -209,6 +209,16 @@ h1 {
     backdrop-filter: blur(20px);
 }
 
+.ai-badge {
+    display: none;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--secondary);
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
 .result-title {
     font-size: 2rem;
     margin: 0 0 12px 0;

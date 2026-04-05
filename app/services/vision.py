@@ -88,12 +88,17 @@ class VisionService:
         noun_en = self._extract_core_noun(raw_caption)
         
         # 전기 사양 정보 조회
-        elec_info = get_electrical_info(noun_en)
-        if not elec_info:
-             elec_info = get_electrical_info(raw_caption)
+        elec_info, is_electronic, is_ai_generated = get_electrical_info(noun_en)
+        if not elec_info and is_electronic: # 전자기기인데 정보를 못찾았을 때 캡션으로 시도
+             elec_info, is_electronic, is_ai_generated = get_electrical_info(raw_caption)
 
         # 제목 결정 (명사형)
-        object_name_ko = elec_info.korean_name if elec_info else self._translate_description(noun_en)
+        # DB에 한글 이름이 정식 등록되어 있으면 사용, 아니면 AI 번역 수행
+        if elec_info and self._contains_korean(elec_info.korean_name):
+            object_name_ko = elec_info.korean_name
+        else:
+            object_name_ko = self._translate_description(noun_en)
+            
         object_name_ko = self._sanitize_title(object_name_ko)
 
         # 보편적 설명 생성
@@ -103,6 +108,8 @@ class VisionService:
         result = DetectionResult(
             object_name=object_name_ko,
             description=rich_description,
+            is_electronic=is_electronic,
+            is_ai_generated=is_ai_generated,
             electrical_info=elec_info
         )
 
@@ -163,14 +170,18 @@ class VisionService:
         text = re.sub(r"^(책단 위에|책상 위에|벽에|바닥에|테이블 위에|선반 위에) (앉은|걸린|놓인|있는) ", "", text)
         return text.strip()
 
+    def _contains_korean(self, text: str) -> bool:
+        """한글 포함 여부 확인"""
+        return bool(re.search("[가-힣]", text))
+
     def _build_rich_description(self, noun_en: str, elec_info: any) -> str:
-        """사물 자체에 대한 정보만 제공"""
+        """사물 자체에 대한 정보 제공"""
         if elec_info:
             return f"{elec_info.description_template}"
         
         translated_noun = self._translate_description(noun_en)
         translated_noun = self._sanitize_title(translated_noun)
-        return f"인식된 사물은 '{translated_noun}'입니다. 해당 사물에 대한 구체적인 전기 사양 데이터가 보완 중입니다."
+        return f"인식된 사물은 '{translated_noun}'입니다. 해당 사물에 대한 구체적인 정보를 불러오고 있습니다."
 
     def _translate_description(self, text: str) -> str:
         """NLLB-200을 사용하여 고품질 번역"""

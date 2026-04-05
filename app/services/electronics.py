@@ -139,6 +139,36 @@ ELECTRONICS_METADATA: Dict[str, ElectricalInfo] = {
         voltage_range="앰프 연결 시 전압 확인 (보통 한국 220V)",
         typical_power="데이터 없음 (앰프 사용 시 10W - 100W+)",
         is_variable=True
+    ),
+    "air fryer": ElectricalInfo(
+        korean_name="에어프라이어",
+        description_template="고온의 열풍을 강하게 순환시켜 식재료를 익히는 주방 가전입니다. 기름 없이 바삭한 조리가 가능하지만, 소비전력이 높으므로 고용량 멀티탭이나 벽면 콘센트 사용을 권장합니다.",
+        voltage_range="한국(220V), 미국(120V) 등",
+        typical_power="800W - 2100W"
+    ),
+    "coffee machine": ElectricalInfo(
+        korean_name="커피머신",
+        description_template="커피를 추출하는 기계입니다. 물을 가열하고 고압을 만드는 과정에서 순간적으로 많은 전력을 사용합니다. 석회질 제거(디스케일링)를 주기적으로 하면 기기 수명이 늘어납니다.",
+        voltage_range="한국(220V), 유럽(230V) 등",
+        typical_power="550W - 1850W"
+    ),
+    "toaster": ElectricalInfo(
+        korean_name="토스터",
+        description_template="식빵 등을 굽는 소형 가전입니다. 열선이 노출되어 있으니 젓가락 등을 넣지 않게 주의하세요. 사용 후 빵가루 트레이를 청소하면 화재 예방에 도움이 됩니다.",
+        voltage_range="한국(220V), 미국/일본(110-120V)",
+        typical_power="700W - 1500W"
+    ),
+    "hair straightener": ElectricalInfo(
+        korean_name="고데기",
+        description_template="열판으로 머리 모양을 잡는 미용 기구입니다. 사용 후 반드시 전원을 껐는지 확인하세요! 여행용으로 쓰실 경우 프리볼트(100V-240V) 제품인지 확인이 필요합니다.",
+        voltage_range="220V (제품에 따라 프리볼트 지원)",
+        typical_power="30W - 100W"
+    ),
+    "rice cooker": ElectricalInfo(
+        korean_name="전기밥솥",
+        description_template="맛있는 밥을 짓고 보온하는 주방 가전입니다. 보온 시간이 길어지면 전기료가 많이 나올 수 있으니 주의하세요! 증기 배출구 근처에 손을 대지 않도록 조심해야 합니다.",
+        voltage_range="한국(220V), 미국(120V) 등",
+        typical_power="600W - 1200W (취사 시)"
     )
 }
 
@@ -148,21 +178,68 @@ SYNONYMS_MAPPING = {
     "gamepad": "game controller", "joypad": "game controller", "charger": "phone charger",
     "adapter": "phone charger", "pc": "laptop", "notebook": "laptop",
     "tv": "television", "screen": "monitor", "vaccum": "vacuum cleaner",
-    "cleaner": "vacuum cleaner", "guitar": "guitar", "electric guitar": "guitar"
+    "cleaner": "vacuum cleaner", "guitar": "guitar", "electric guitar": "guitar",
+    "airfryer": "air fryer", "coffee maker": "coffee machine", "espresso machine": "coffee machine",
+    "straightener": "hair straightener", "hair iron": "hair straightener",
+    "cooker": "rice cooker", "electric cooker": "rice cooker", "pressure cooker": "rice cooker"
 }
 
-def get_electrical_info(object_name: str) -> Optional[ElectricalInfo]:
-    """제품명이나 캡션을 기반으로 전기 사양 조회"""
+NON_ELECTRONIC_KEYWORDS = {
+    "piano", "acoustic guitar", "table", "chair", "desk", "bed", "sofa", "book", "bottle",
+    "cup", "plate", "fork", "knife", "plant", "tree", "flower", "cat", "dog", "bird",
+    "clothing", "shirt", "pants", "shoes", "bag", "backpack", "window", "door", "wall",
+    "floor", "ceiling", "stairs", "bicycle", "car", "motorcycle", "vehicle", "human",
+    "person", "baby", "man", "woman", "face", "hand", "foot", "arm", "leg", "hair"
+}
+
+def get_electrical_info(object_name: str) -> (Optional[ElectricalInfo], bool, bool):
+    """제품명이나 캡션을 기반으로 전기 사양 및 전자기기 여부 조회"""
     name_lower = object_name.lower()
     
+    # 0. 확실히 전자기기가 아닌 키워드 체크
+    if any(kw in name_lower for kw in NON_ELECTRONIC_KEYWORDS):
+        return None, False, True
+
     # 1. 메타데이터와 직접 매칭
     for key, info in ELECTRONICS_METADATA.items():
         if key in name_lower:
-            return info
+            return info, True, False
             
     # 2. 동의어 매칭
     for syn, official in SYNONYMS_MAPPING.items():
         if syn in name_lower:
-            return ELECTRONICS_METADATA.get(official)
+            return ELECTRONICS_METADATA.get(official), True, False
             
-    return None
+    # 3. 실시간 동적 정보 생성 (Fallback)
+    info = get_dynamic_electrical_info(object_name)
+    return info, True, True
+
+def get_dynamic_electrical_info(object_name: str) -> Optional[ElectricalInfo]:
+    """데이터베이스에 없는 사물에 대해 일반적인 정보 생성 (AI 추론 모드)"""
+    name_lower = object_name.lower()
+    
+    # 일반적인 가전 카테고리 추론 (키워드 기반)
+    if any(kw in name_lower for kw in ["phone", "tablet", "mobile"]):
+        return ElectricalInfo(
+            korean_name="모바일 기기",
+            description_template="휴대용 스마트 기기입니다. 배터리 수명을 위해 과방전이나 과열을 피하는 것이 좋으며, 정품 케이블 사용을 권장합니다.",
+            voltage_range="USB 충전 (5V/9V/12V/15V/20V 등)",
+            typical_power="5W - 100W (충전 시)",
+            is_variable=True
+        )
+    
+    if any(kw in name_lower for kw in ["watch", "clocks"]):
+        return ElectricalInfo(
+            korean_name="시계/웨어러블",
+            description_template="손목에 차거나 벽에 거는 가전입니다. 정밀 기기이므로 강한 충격이나 자석을 피하는 것이 좋습니다.",
+            voltage_range="배터리 또는 USB 권장 (5V)",
+            typical_power="5W 이하"
+        )
+
+    # 정말 모르는 사물일 경우 '일반 사물'로 생성
+    return ElectricalInfo(
+        korean_name=object_name,  # "알 수 없는 사물" 문구 제거
+        description_template="인식된 사물에 대해 AI가 분석한 일반적인 정보가 표시됩니다. 실제 제품의 에너지 소비 효율 등급이나 라벨을 확인하는 것이 가장 정확합니다.",
+        voltage_range="확인 필요 (보통 220V 또는 USB)",
+        typical_power="분석 중..."
+    )

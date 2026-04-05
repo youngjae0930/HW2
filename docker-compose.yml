@@ -1,0 +1,22 @@
+version: "3.8"
+
+services:
+  object-detective:
+    image: ${DOCKERHUB_USERNAME}/object-detective:latest
+    container_name: object-detective-api
+    ports:
+      - "8000:8000"
+    volumes:
+      # 모델 파일이 매번 다시 다운로드되지 않도록 로컬 볼륨 연결
+      - ./models:/app/models
+    environment:
+      - HUGGINGFACE_HUB_CACHE=/app/models
+    restart: always
+    # GPU를 사용하는 환경이라면 아래 주석을 해제할 수 있습니다.
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]

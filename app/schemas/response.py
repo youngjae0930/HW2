@@ -12,6 +12,8 @@ class ElectricalInfo(BaseModel):
 class DetectionResult(BaseModel):
     object_name: str
     description: str
+    is_electronic: bool = True
+    is_ai_generated: bool = False
     electrical_info: Optional[ElectricalInfo] = None
 
 class PredictionResponse(BaseModel):
