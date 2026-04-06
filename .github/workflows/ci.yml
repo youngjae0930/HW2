@@ -58,8 +58,8 @@ jobs:
       # 3. 최신 이미지 배포
       - name: Deploy with Docker Compose
         run: |
-          # 환경 변수 설정을 위해 .env 파일 생성 (또는 기존 값 활용)
-          echo "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" > .env
+          # PowerShell 인코딩 문제 해결을 위해 UTF-8로 .env 생성
+          "DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}" | Out-File -Encoding utf8 .env
           
           # 기존 이미지 최신화 및 서비스 재배포
           docker-compose pull
