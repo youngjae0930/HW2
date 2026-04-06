@@ -54,8 +54,8 @@ class VisionService:
             print(f"AI 번역 모델 로드 실패: {e}. 사전 기반 번역으로 전환합니다.")
             self.use_ai_translator = False
 
-    async def predict(self, image: Image.Image) -> PredictionResponse:
-        """사물 분석 및 전자기기/가구 정보 제공"""
+    async def predict(self, image: Image.Image, mode: str = "auto") -> PredictionResponse:
+        """사물 분석 및 전자기기/가구 정보 제공 (모드 분기 지원)"""
         
         # 1. 캡셔닝 수행
         prompt = "<CAPTION>"
@@ -74,8 +74,8 @@ class VisionService:
         parsed_answer = self.processor.post_process_generation(generated_text, task=prompt, image_size=(image.width, image.height))
         raw_caption = parsed_answer["<CAPTION>"]
 
-        # 2. 비사물 필터링
-        if self._is_non_object_image(raw_caption):
+        # 2. 비사물 필터링 (자동 모드일 때만 강력하게 적용)
+        if mode == "auto" and self._is_non_object_image(raw_caption):
             return PredictionResponse(
                 results=[DetectionResult(
                     object_name="사물 사진 필요",
@@ -88,15 +88,34 @@ class VisionService:
         # 3. 분석 수행 (전자 vs 가구 vs 일반)
         noun_en = self._extract_core_noun(raw_caption)
         
-        # [Category 1] 전자기기 분석
-        elec_info, is_electronic, is_ai_elec = get_electrical_info(noun_en)
-        if not elec_info and is_electronic:
-             elec_info, is_electronic, is_ai_elec = get_electrical_info(raw_caption)
+        elec_info = None
+        is_electronic = False
+        is_ai_elec = False
+        
+        furn_info = None
+        is_furniture = False
 
-        # [Category 2] 가구 분석
-        furn_info, is_furniture = get_furniture_info(noun_en)
-        if not furn_info and is_furniture:
-            furn_info, is_furniture = get_furniture_info(raw_caption)
+        # [Category 1] 전자기기 분석 (전자기기 모드이거나 자동 모드일 때만)
+        if mode in ["auto", "electronics"]:
+            elec_info, is_electronic, is_ai_elec = get_electrical_info(noun_en)
+            if not elec_info and is_electronic:
+                 elec_info, is_electronic, is_ai_elec = get_electrical_info(raw_caption)
+        
+        # [Category 2] 가구 분석 (가구 모드이거나 자동 모드일 때만)
+        if mode in ["auto", "furniture"]:
+            furn_info, is_furniture = get_furniture_info(noun_en)
+            if not furn_info and is_furniture:
+                furn_info, is_furniture = get_furniture_info(raw_caption)
+        
+        # 모드 강제 적용 (전자기기 모드인데 인식이 안 된 경우 AI fallback)
+        if mode == "electronics":
+            is_electronic = True
+            is_furniture = False
+            furn_info = None
+        elif mode == "furniture":
+            is_furniture = True
+            is_electronic = False
+            elec_info = None
 
         # 제목 결정
         title_ko = ""
@@ -113,6 +132,8 @@ class VisionService:
         rich_description = ""
         if is_electronic and elec_info:
             rich_description = elec_info.description_template
+        elif is_electronic: # 모드 강제 적용에 의한 fallback
+            rich_description = f"인식된 전자기기는 '{title_ko}'입니다. 실제 제품의 에너지 소비 효율 등급이나 라벨을 확인하는 것이 가장 정확합니다."
         elif is_furniture:
             if furn_info:
                 rich_description = furn_info.description_template
@@ -127,7 +148,7 @@ class VisionService:
             description=rich_description,
             is_electronic=is_electronic,
             is_furniture=is_furniture,
-            is_ai_generated=is_ai_elec or (is_furniture and not furn_info),
+            is_ai_generated=is_ai_elec or (is_furniture and not furn_info) or (mode != "auto"),
             electrical_info=elec_info,
             furniture_info=furn_info
         )

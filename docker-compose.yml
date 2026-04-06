@@ -3,6 +3,7 @@ version: "3.8"
 services:
   object-detective:
     image: ${DOCKERHUB_USERNAME}/object-detective:latest
+    # build: .
     container_name: object-detective-api
     ports:
       - "8000:8000"

@@ -4,17 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>사물 탐정 | 전자기기 및 가구 분석 서비스</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="/static/style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;800&display=swap" rel="stylesheet">
 </head>
-<body>
+<body class="elec-mode">
     <div class="container">
         <header>
-            <h1>Object Detective</h1>
+            <h1>사물 탐지기</h1>
             <p class="subtitle">전자기기 및 가구를 인식하고 전문적인 관리 팁을 확인하세요.</p>
         </header>
+
+        <section class="mode-selection">
+            <div class="mode-group" id="mode-group">
+                <button class="mode-btn active" data-mode="electronics">🔌 전자기기 모드</button>
+                <button class="mode-btn" data-mode="furniture">🛋️ 가구 모드</button>
+            </div>
+        </section>
 
         <section class="upload-section">
             <div class="upload-card" id="drop-zone">
@@ -83,6 +90,6 @@
             </footer>
         </div>
 
-        <script src="script.js"></script>
+        <script src="/static/script.js"></script>
     </body>
 </html>

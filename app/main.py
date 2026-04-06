@@ -1,4 +1,4 @@
-from fastapi import FastAPI, UploadFile, File, HTTPException, Depends
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from PIL import Image
@@ -17,7 +17,7 @@ logger = logging.getLogger(__name__)
 app = FastAPI(
     title=settings.APP_NAME,
     description="전자기기 및 가구 사물 인식 AI 서비스",
-    version="2.0.0",
+    version="2.1.0",
     debug=settings.DEBUG
 )
 
@@ -36,13 +36,16 @@ async def health_check():
     return {"status": "healthy", "model": settings.MODEL_ID}
 
 @app.post("/predict", response_model=PredictionResponse)
-async def predict_image(file: UploadFile = File(...)):
-    """이미지를 분석하여 카테고리별 전문 정보 반환"""
+async def predict_image(
+    file: UploadFile = File(...),
+    mode: str = Form("auto")
+):
+    """이미지를 분석하여 카테고리별 전문 정보 반환 (모드 선택 가능)"""
     if not file.content_type.startswith('image/'):
         raise HTTPException(status_code=400, detail="유효한 이미지 파일이 아닙니다.")
 
     try:
-        logger.info(f"Received file: {file.filename}")
+        logger.info(f"Received file: {file.filename}, mode: {mode}")
         
         # 이미지 데이터 읽기 및 검증
         image_data = await file.read()
@@ -51,10 +54,10 @@ async def predict_image(file: UploadFile = File(...)):
             
         image = Image.open(io.BytesIO(image_data)).convert("RGB")
         
-        # 비전 서비스 호출
-        result = await vision_service.predict(image)
+        # 비전 서비스 호출 (mode 전달)
+        result = await vision_service.predict(image, mode=mode)
         
-        logger.info(f"Analysis complete for {file.filename}")
+        logger.info(f"Analysis complete for {file.filename} (mode: {mode})")
         return result
         
     except Exception as e:

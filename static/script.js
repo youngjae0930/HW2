@@ -34,6 +34,24 @@ dropZone.ondrop = (e) => {
     if (file) handleUpload(file);
 };
 
+let currentMode = 'electronics';
+
+// Mode Selection Toggle
+document.querySelectorAll('.mode-btn').forEach(btn => {
+    btn.onclick = () => {
+        document.querySelector('.mode-btn.active').classList.remove('active');
+        btn.classList.add('active');
+        currentMode = btn.dataset.mode;
+        
+        // 배경 테마 전환
+        if (currentMode === 'electronics') {
+            document.body.className = 'elec-mode';
+        } else if (currentMode === 'furniture') {
+            document.body.className = 'furn-mode';
+        }
+    };
+});
+
 // Main Upload Function
 async function handleUpload(file) {
     if (!file.type.startsWith('image/')) {
@@ -60,6 +78,7 @@ async function handleUpload(file) {
     // Prepare Multipart Form Data
     const formData = new FormData();
     formData.append('file', file);
+    formData.append('mode', currentMode); // 선택된 모드 추가
 
     try {
         const response = await fetch('/predict', {
@@ -136,6 +155,7 @@ function displayResult(result) {
         document.getElementById('spec-material').textContent = furnSpecs.material || '확인 중';
         document.getElementById('spec-care').textContent = furnSpecs.care_tip || '-';
     } else {
+        categoryTag.classList.add('general-tag');
         categoryTag.textContent = '카테고리: 일반 사물';
     }
 
