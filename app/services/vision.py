@@ -97,9 +97,9 @@ class VisionService:
 
         # [Category 1] 전자기기 분석 (전자기기 모드이거나 자동 모드일 때만)
         if mode in ["auto", "electronics"]:
-            elec_info, is_electronic, is_ai_elec = get_electrical_info(noun_en)
+            elec_info, is_electronic, is_ai_elec = await get_electrical_info(noun_en)
             if not elec_info and is_electronic:
-                 elec_info, is_electronic, is_ai_elec = get_electrical_info(raw_caption)
+                 elec_info, is_electronic, is_ai_elec = await get_electrical_info(raw_caption)
         
         # [Category 2] 가구 분석 (가구 모드이거나 자동 모드일 때만)
         if mode in ["auto", "furniture"]:

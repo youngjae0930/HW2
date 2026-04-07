@@ -1,6 +1,7 @@
 from typing import Dict, List, Optional
 import re
 from ..schemas.response import ElectricalInfo
+from .search import search_service
 
 ELECTRONICS_METADATA: Dict[str, ElectricalInfo] = {
     "refrigerator": ElectricalInfo(
@@ -192,8 +193,8 @@ NON_ELECTRONIC_KEYWORDS = {
     "person", "baby", "man", "woman", "face", "hand", "foot", "arm", "leg", "hair"
 }
 
-def get_electrical_info(object_name: str) -> (Optional[ElectricalInfo], bool, bool):
-    """제품명이나 캡션을 기반으로 전기 사양 및 전자기기 여부 조회"""
+async def get_electrical_info(object_name: str) -> (Optional[ElectricalInfo], bool, bool):
+    """제품명이나 캡션을 기반으로 전기 사양 및 전자기기 여부 조회 (실시간 검색 지원)"""
     name_lower = object_name.lower()
     
     # 0. 확실히 전자기기가 아닌 키워드 체크
@@ -210,7 +211,12 @@ def get_electrical_info(object_name: str) -> (Optional[ElectricalInfo], bool, bo
         if syn in name_lower:
             return ELECTRONICS_METADATA.get(official), True, False
             
-    # 3. 실시간 동적 정보 생성 (Fallback)
+    # 3. 실시간 웹 검색 시도 (신규 기능)
+    search_info = search_service.get_info(object_name)
+    if search_info:
+        return search_info, True, True
+
+    # 4. 실시간 동적 정보 생성 (최후의 Fallback)
     info = get_dynamic_electrical_info(object_name)
     return info, True, True
 

@@ -11,3 +11,4 @@ aiofiles
 sacremoses
 einops
 timm
+duckduckgo-search
