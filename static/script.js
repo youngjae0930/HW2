@@ -143,7 +143,12 @@ function displayResult(result) {
         categoryTag.textContent = '카테고리: 전자기기';
         
         elecGrid.style.display = 'grid';
-        document.getElementById('spec-voltage').textContent = elecSpecs.is_variable ? '제품별 상이(불분명)' : elecSpecs.voltage_range;
+        // AI가 구체적인 정보를 찾아왔다면 is_variable과 상관없이 우선 표시
+        const displayVoltage = (elecSpecs.voltage_range && !elecSpecs.voltage_range.includes('확인 필요')) 
+                               ? elecSpecs.voltage_range 
+                               : (elecSpecs.is_variable ? '제품별 상이(불분명)' : elecSpecs.voltage_range);
+        
+        document.getElementById('spec-voltage').textContent = displayVoltage;
         document.getElementById('spec-power').textContent = elecSpecs.typical_power || '-';
     } else if (isFurniture && furnSpecs) {
         // 가구 테마 적용

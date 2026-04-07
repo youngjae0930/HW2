@@ -214,6 +214,8 @@ async def get_electrical_info(object_name: str) -> (Optional[ElectricalInfo], bo
     # 3. 실시간 웹 검색 시도 (신규 기능)
     search_info = search_service.get_info(object_name)
     if search_info:
+        # 실시간 검색 결과는 UI에서 바로 노출되도록 is_variable을 False로 설정
+        search_info.is_variable = False 
         return search_info, True, True
 
     # 4. 실시간 동적 정보 생성 (최후의 Fallback)
