@@ -131,16 +131,23 @@ class VisionService:
         # 설명 생성
         rich_description = ""
         if is_electronic and elec_info:
-            rich_description = elec_info.description_template
+            if is_ai_elec: # 데이터에 없는 사물인 경우 AI 분석 캡션을 설명으로 활용
+                translated_caption = self._translate_description(raw_caption)
+                rich_description = f"{translated_caption} (AI 분석 정보)"
+            else:
+                rich_description = elec_info.description_template
         elif is_electronic: # 모드 강제 적용에 의한 fallback
-            rich_description = f"인식된 전자기기는 '{title_ko}'입니다. 실제 제품의 에너지 소비 효율 등급이나 라벨을 확인하는 것이 가장 정확합니다."
+            translated_caption = self._translate_description(raw_caption)
+            rich_description = f"{translated_caption} (AI 분석 정보)"
         elif is_furniture:
             if furn_info:
                 rich_description = furn_info.description_template
             else:
-                rich_description = f"인식된 가구는 '{title_ko}'입니다. 해당 가구에 대한 관리 정보를 불러오는 중입니다."
+                translated_caption = self._translate_description(raw_caption)
+                rich_description = f"{translated_caption} (가구 모드 AI 분석 정보)"
         else:
-            rich_description = f"인식된 사물은 '{title_ko}'입니다. 해당 사물의 특징을 분석하고 있습니다."
+            translated_caption = self._translate_description(raw_caption)
+            rich_description = f"{translated_caption} (일반 사물 분석 정보)"
 
         # 결과 구성
         result = DetectionResult(
@@ -182,7 +189,7 @@ class VisionService:
         return False
 
     def _extract_core_noun(self, text: str) -> str:
-        """위치 어구 및 묘사를 정밀 제거하여 핵심 명사만 추출"""
+        """위치 어구, 동사구 및 묘사를 정밀 제거하여 핵심 명사만 추출"""
         cleaned = text.lower()
         patterns = [
             r"^(a |an |the )?(photo|image|view|picture) (of|shows|showing) ",
@@ -193,9 +200,12 @@ class VisionService:
         for p in patterns:
             cleaned = re.sub(p, "", cleaned)
 
+        # 동사구 및 위치 전치사구 대거 추가 (동적으로 명사만 추출)
         pos_patterns = [
-            r" (on|in|with|near|sitting on|placed on|hanging on|of a) .*",
-            r" that is .*"
+            r" (on|in|with|at|near|above|below|behind|beside|next to|sitting on|placed on|hanging on|of a|captured) .*",
+            r" (flying|playing|standing|holding|looking|using|walking|watching|carried by|surrounded by) .*",
+            r" that is .*",
+            r" for .*"
         ]
         for p in pos_patterns:
             cleaned = re.sub(p, "", cleaned)
